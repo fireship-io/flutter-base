@@ -7,18 +7,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'FlutterBase',
-        home: Scaffold(
-            appBar: AppBar(
-              title: Text('Flutterbase'),
-              backgroundColor: Colors.amber,
-            ),
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[LoginButton(), UserProfile()],
-              ),
-            )));
+      title: 'FlutterBase',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Flutterbase'),
+          backgroundColor: Colors.amber,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[LoginButton(), UserProfile()],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -43,7 +45,7 @@ class UserProfileState extends State<UserProfile> {
   Widget build(BuildContext context) {
     return Column(children: <Widget>[
       Container(padding: EdgeInsets.all(20), child: Text(_profile.toString())),
-      Text(_loading.toString())
+      Container(padding:EdgeInsets.all(20), child: Text('Loading: ${_loading.toString()}')),
     ]);
   }
 }

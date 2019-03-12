@@ -30,17 +30,26 @@ class AuthService {
   }
 
   Future<FirebaseUser> googleSignIn() async {
-    loading.add(true);
-    GoogleSignInAccount googleUser = await _googleSignIn.signIn();
-    GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-    FirebaseUser user = await _auth.signInWithGoogle(
-        accessToken: googleAuth.accessToken, idToken: googleAuth.idToken);
+    try {
+      loading.add(true);
+      GoogleSignInAccount googleSignInAccount = await _googleSignIn.signIn();
+      GoogleSignInAuthentication googleAuth =
+          await googleSignInAccount.authentication;
 
-    updateUserData(user);
-    print("signed in " + user.displayName);
+      final AuthCredential credential = GoogleAuthProvider.getCredential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
 
-    loading.add(false);
-    return user;
+      FirebaseUser user = await _auth.signInWithCredential(credential);
+      updateUserData(user);
+      print("user name: ${user.displayName}");
+
+      loading.add(false);
+      return user;
+    } catch (error) {
+      return error;
+    }
   }
 
   void updateUserData(FirebaseUser user) async {
@@ -55,9 +64,15 @@ class AuthService {
     }, merge: true);
   }
 
-  void signOut() {
-    _auth.signOut();
+  Future<String> signOut() async {
+    try {
+      await _auth.signOut();
+      return 'SignOut';
+    } catch (e) {
+      return e.toString();
+    }
   }
+
 }
 
 // TODO refactor global to InheritedWidget
