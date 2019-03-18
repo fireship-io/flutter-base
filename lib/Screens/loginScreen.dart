@@ -3,6 +3,8 @@ import 'package:flutter_signin_button/flutter_signin_button.dart';
 
 import '../models/main.dart';
 
+import '../Screens/PhoneAuthDialog.dart';
+
 final MainModel _model = MainModel();
 
 class LoginScreen extends StatefulWidget {
@@ -11,6 +13,16 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  void _openPhoneAuthDialog() {
+    Navigator.of(context).push(
+      MaterialPageRoute<Null>(
+          builder: (BuildContext context) {
+            return PhoneAuthDialog();
+          },
+          fullscreenDialog: true),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 SignInButtonBuilder(
                   text: 'Sign in with Phone',
                   icon: Icons.phone,
-                  onPressed: () => _model.phoneSignIn(),
+                  onPressed: () => _openPhoneAuthDialog(),
                   backgroundColor: Colors.green,
                 ),
                 SignInButton(

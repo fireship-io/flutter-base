@@ -54,7 +54,6 @@ class _MyAppState extends State<MyApp> {
         },
         initialRoute: '/',
         onGenerateRoute: (RouteSettings settings) {
-          print('onGenerateRoute: $settings');
           switch (settings.name) {
             case '/':
               return MaterialPageRoute(builder: (_) {

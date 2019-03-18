@@ -41,6 +41,7 @@ class AuthService extends Model {
   Future<bool> checkIfAuthenticated() async {
     FirebaseUser user = await _auth.currentUser();
     if (user != null) {
+      updateUserData(user);
       print('User loggin in');
       return true;
     } else {
@@ -53,11 +54,22 @@ class AuthService extends Model {
     print('Email sign in');
   }
 
-  Future<FirebaseUser> phoneSignIn() async {
-    /// Phone auth
-    // String phoneNumber;
-    // String smsCode;
-    // String verificationId;
+  Future<FirebaseUser> phoneSignIn(phoneNumber) async {
+    final PhoneCodeAutoRetrievalTimeout autoRetrieve = (String verId) {
+      return verId;
+    };
+
+    final PhoneCodeSent smsCodeSent = (String verId, [int forceCodeSend]) {
+      return verId;
+    };
+
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: phoneNumber,
+      codeAutoRetrievalTimeout: autoRetrieve,
+      codeSent: smsCodeSent,
+      timeout: Duration(seconds: 5),
+    );
+
     print('Phone sign in');
   }
 
