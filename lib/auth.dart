@@ -1,10 +1,18 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'package:flutter_twitter_login/flutter_twitter_login.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rxdart/rxdart.dart';
 
 class AuthService {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final FacebookLogin _facebookSignIn = FacebookLogin();
+  var twitterLogin = TwitterLogin(
+    consumerKey: '9NCZQIjJLPCDFvMPLjUAos7j0',
+    consumerSecret: 'Fq7ceSAQgMkyQF4W8GPYtQgMPnS253E308IRYwzbfKkuJLr5GO',
+  );
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final Firestore _db = Firestore.instance;
 
@@ -19,14 +27,22 @@ class AuthService {
     profile = user.switchMap((FirebaseUser u) {
       if (u != null) {
         return _db
-            .collection('users')
-            .document(u.uid)
-            .snapshots()
-            .map((snap) => snap.data);
+          .collection('users')
+          .document(u.uid)
+          .snapshots()
+          .map((snap) => snap.data);
       } else {
         return Observable.just({});
       }
     });
+  }
+
+  Future<FirebaseUser> emailSignIn() async {
+    print('Email sign in');
+  }
+
+  Future<FirebaseUser> phoneSignIn() async {
+    print('Phone sign in');
   }
 
   Future<FirebaseUser> googleSignIn() async {
@@ -47,6 +63,73 @@ class AuthService {
 
       loading.add(false);
       return user;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  Future<FirebaseUser> facebookSignIn() async {
+    try {
+      loading.add(true);
+      final loginResult = await _facebookSignIn.logInWithReadPermissions(['email', 'public_profile']);
+
+      switch (loginResult.status) {
+        case FacebookLoginStatus.loggedIn:
+          final AuthCredential credential = FacebookAuthProvider.getCredential(
+            accessToken: loginResult.accessToken.token
+          );
+
+          final FirebaseUser user = await _auth.signInWithCredential(credential);
+          updateUserData(user);
+          print("user name: ${user.displayName}");
+          return user;
+
+          break;
+        case FacebookLoginStatus.cancelledByUser:
+          print('object');
+          break;
+        case FacebookLoginStatus.error:
+          print(loginResult.errorMessage);
+          break;
+      }
+
+      loading.add(false);
+    } catch (error) {
+      return error;
+    }
+  }
+
+  Future<FirebaseUser> twitterSignIn() async {
+    try {
+      loading.add(true);
+      
+      final TwitterLoginResult loginResult = await twitterLogin.authorize();
+
+      switch (loginResult.status) {
+        case TwitterLoginStatus.loggedIn:
+          final session = loginResult.session;
+          print('${session.token}, ${session.secret}');
+
+          final AuthCredential credential = TwitterAuthProvider.getCredential(
+            authToken: loginResult.session.token,
+            authTokenSecret: loginResult.session.secret
+          );
+
+          final FirebaseUser user = await _auth.signInWithCredential(credential);
+          updateUserData(user);
+          print("user name: ${user.displayName}");
+          return user;
+
+          break;
+        case TwitterLoginStatus.cancelledByUser:
+          print('Cancelled by user');
+          break;
+        case TwitterLoginStatus.error:
+          print('${loginResult.errorMessage}');
+          break;
+      }
+
+      loading.add(false);
     } catch (error) {
       return error;
     }
