@@ -63,11 +63,22 @@ class AuthService extends Model {
       return verId;
     };
 
+    final PhoneVerificationCompleted verifiedSuccess = (FirebaseUser user) {
+      updateUserData(user);
+      print('User verified');
+    };
+
+    final PhoneVerificationFailed verifiedFailed = (AuthException exeption) {
+      print('Phone exeption error: ${exeption.message}');
+    };
+
     await FirebaseAuth.instance.verifyPhoneNumber(
       phoneNumber: phoneNumber,
       codeAutoRetrievalTimeout: autoRetrieve,
       codeSent: smsCodeSent,
       timeout: Duration(seconds: 5),
+      verificationCompleted: verifiedSuccess,
+      verificationFailed: verifiedFailed,
     );
 
     print('Phone sign in');
