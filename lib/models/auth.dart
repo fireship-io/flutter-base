@@ -1,18 +1,19 @@
+import 'package:scoped_model/scoped_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:flutter_twitter_login/flutter_twitter_login.dart';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rxdart/rxdart.dart';
 
-class AuthService {
+class AuthService extends Model {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FacebookLogin _facebookSignIn = FacebookLogin();
-  var twitterLogin = TwitterLogin(
+  final twitterLogin = TwitterLogin(
     consumerKey: '9NCZQIjJLPCDFvMPLjUAos7j0',
     consumerSecret: 'Fq7ceSAQgMkyQF4W8GPYtQgMPnS253E308IRYwzbfKkuJLr5GO',
   );
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final Firestore _db = Firestore.instance;
 
@@ -37,11 +38,26 @@ class AuthService {
     });
   }
 
+  Future<bool> checkIfAuthenticated() async {
+    FirebaseUser user = await _auth.currentUser();
+    if (user != null) {
+      print('User loggin in');
+      return true;
+    } else {
+      print('User not logged in');
+      return false;
+    }
+  }
+
   Future<FirebaseUser> emailSignIn() async {
     print('Email sign in');
   }
 
   Future<FirebaseUser> phoneSignIn() async {
+    /// Phone auth
+    String phoneNumber;
+    String smsCode;
+    String verificationId;
     print('Phone sign in');
   }
 
@@ -159,4 +175,5 @@ class AuthService {
 }
 
 // TODO refactor global to InheritedWidget
-final AuthService authService = AuthService();
+// final AuthService authService = AuthService();
+

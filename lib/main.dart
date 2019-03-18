@@ -1,109 +1,79 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_signin_button/flutter_signin_button.dart';
-import 'auth.dart';
+import 'package:scoped_model/scoped_model.dart';
 
-void main() => runApp(MyApp());
+import 'models/main.dart';
 
-class MyApp extends StatelessWidget {
+import './Screens/homeScreen.dart';
+import './Screens/loginScreen.dart';
+import './Screens/common.dart';
+
+bool _isAuthenticated = false;
+final MainModel _model = MainModel();
+
+void main() async {
+  _isAuthenticated = await _model.checkIfAuthenticated();
+  runApp(MyApp());
+}
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  Map<String, dynamic> _profile;
+  bool _loading = false;
+
+  // @override
+  // initState() {
+  //   super.initState();
+  //   authService.profile.listen((state) => setState(() => _profile = state));
+  //   authService.loading.listen((state) => setState(() => _loading = state));
+  // }
+
+  @override
+  void initState() {
+    super.initState();
+    _model.checkIfAuthenticated().then((bool isAuthenticated) {
+      print('isAuthenticated _MyAppState: $isAuthenticated');
+      _isAuthenticated = isAuthenticated;
+    }).catchError((onError) {
+      print('MyApp error: ${onError.toString()}');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[LoginButtons(), UserProfile()],
-          ),
-        ),
+    return ScopedModel<MainModel>(
+      model: _model,
+      child: MaterialApp(
+        // initialRoute: '/',
+        routes: <String, WidgetBuilder>{
+          '/login': (BuildContext context) => LoginScreen(),
+          '/home': (BuildContext context) => HomeScreen(),
+        },
+        initialRoute: '/',
+        onGenerateRoute: (RouteSettings settings) {
+          print('onGenerateRoute: $settings');
+          switch (settings.name) {
+            case '/':
+              return MaterialPageRoute(builder: (_) {
+                return _isAuthenticated ? HomeScreen() : LoginScreen();
+              });
+            case '/login':
+              return MaterialPageRoute(builder: (_) => LoginScreen());
+            case '/home':
+              return MaterialPageRoute(builder: (_) => HomeScreen());
+          }
+        },
+        onUnknownRoute: (RouteSettings settings) {
+          print('onUnknownRoute');
+          return MaterialPageRoute(
+              builder: (BuildContext context) => HomeScreen());
+        },
       ),
     );
   }
 }
 
-class UserProfile extends StatefulWidget {
-  @override
-  UserProfileState createState() => UserProfileState();
-}
 
-class UserProfileState extends State<UserProfile> {
-  Map<String, dynamic> _profile;
-  bool _loading = false;
-
-  /// Phone auth
-  String phoneNumber;
-  String smsCode;
-  String verificationId;
-
-  @override
-  initState() {
-    super.initState();
-    authService.profile.listen((state) => setState(() => _profile = state));
-
-    authService.loading.listen((state) => setState(() => _loading = state));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(children: <Widget>[
-      Container(padding: EdgeInsets.all(20), child: Text(_profile.toString())),
-      Container(
-          padding: EdgeInsets.all(20),
-          child: Text('Loading: ${_loading.toString()}')),
-    ]);
-  }
-}
-
-class LoginButtons extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        SignInButtonBuilder(
-          text: 'Sign in with Email',
-          icon: Icons.email,
-          onPressed: () => authService.emailSignIn(),
-          backgroundColor: Colors.blueGrey[700],
-        ),
-        SignInButtonBuilder(
-          text: 'Sign in with Phone',
-          icon: Icons.phone,
-          onPressed: () => authService.phoneSignIn(),
-          backgroundColor: Colors.green,
-        ),
-        SignInButton(
-          Buttons.Google,
-          onPressed: () => authService.googleSignIn(),
-        ),
-        SignInButton(
-          Buttons.Facebook,
-          onPressed: () => authService.facebookSignIn(),
-        ),
-        SignInButton(
-          Buttons.Twitter,
-          onPressed: () => authService.twitterSignIn(),
-        ),
-      ],
-    );
-
-    // return StreamBuilder(
-    //     stream: authService.user,
-    //     builder: (context, snapshot) {
-    //       if (snapshot.hasData) {
-    //         return MaterialButton(
-    //           onPressed: () => authService.signOut(),
-    //           color: Colors.red,
-    //           textColor: Colors.white,
-    //           child: Text('Signout'),
-    //         );
-    //       } else {
-    //         return MaterialButton(
-    //           onPressed: () => authService.googleSignIn(),
-    //           color: Colors.white,
-    //           textColor: Colors.black,
-    //           child: Text('Login with Google'),
-    //         );
-    //       }
-    //     });
-  }
-}
