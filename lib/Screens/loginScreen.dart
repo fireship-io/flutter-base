@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 
-import '../models/auth.dart';
 import '../models/main.dart';
 
 final MainModel _model = MainModel();

@@ -5,7 +5,7 @@ import 'models/main.dart';
 
 import './Screens/homeScreen.dart';
 import './Screens/loginScreen.dart';
-import './Screens/common.dart';
+// import './Screens/common.dart';
 
 bool _isAuthenticated = false;
 final MainModel _model = MainModel();
@@ -21,8 +21,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  Map<String, dynamic> _profile;
-  bool _loading = false;
+  // Map<String, dynamic> _profile;
+  // bool _loading = false;
 
   // @override
   // initState() {

@@ -55,9 +55,9 @@ class AuthService extends Model {
 
   Future<FirebaseUser> phoneSignIn() async {
     /// Phone auth
-    String phoneNumber;
-    String smsCode;
-    String verificationId;
+    // String phoneNumber;
+    // String smsCode;
+    // String verificationId;
     print('Phone sign in');
   }
 
