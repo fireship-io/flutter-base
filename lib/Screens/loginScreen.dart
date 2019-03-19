@@ -14,7 +14,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  
   emailSignIn() {
     Navigator.of(context).push(
       MaterialPageRoute<Null>(
@@ -63,45 +62,43 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // backgroundColor: Color.fromRGBO(42, 46, 53, 1.0),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  margin: EdgeInsets.all(40),
-                  width: MediaQuery.of(context).size.width / 3,
-                  child: Image.asset('assets/images/Fireship.jpeg'),
-                ),
-                SignInButtonBuilder(
-                  text: 'Sign in with Email',
-                  icon: Icons.email,
-                  onPressed: () => emailSignIn(),
-                  backgroundColor: Colors.blueGrey[700],
-                ),
-                SignInButtonBuilder(
-                  text: 'Sign in with Phone',
-                  icon: Icons.phone,
-                  onPressed: () => phoneSignIn(),
-                  backgroundColor: Colors.green,
-                ),
-                SignInButton(
-                  Buttons.Google,
-                  onPressed: () => googleSignIn(),
-                ),
-                SignInButton(
-                  Buttons.Facebook,
-                  onPressed: () => facebookSignIn(),
-                ),
-                SignInButton(
-                  Buttons.Twitter,
-                  onPressed: () => twitterSignIn(),
-                ),
-              ],
-            ),
-          ],
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Container(
+                margin: EdgeInsets.all(30),
+                width: MediaQuery.of(context).size.width / 3,
+                height: 200,
+                child: Image.asset('assets/images/Fireship.jpeg'),
+              ),
+              SignInButtonBuilder(
+                text: 'Sign in with Email',
+                icon: Icons.email,
+                onPressed: () => emailSignIn(),
+                backgroundColor: Colors.blueGrey[700],
+              ),
+              SignInButtonBuilder(
+                text: 'Sign in with Phone',
+                icon: Icons.phone,
+                onPressed: () => phoneSignIn(),
+                backgroundColor: Colors.green,
+              ),
+              SignInButton(
+                Buttons.Google,
+                onPressed: () => googleSignIn(),
+              ),
+              SignInButton(
+                Buttons.Facebook,
+                onPressed: () => facebookSignIn(),
+              ),
+              SignInButton(
+                Buttons.Twitter,
+                onPressed: () => twitterSignIn(),
+              ),
+            ],
+          ),
         ),
       ),
     );
