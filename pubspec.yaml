@@ -30,6 +30,7 @@ dependencies:
 
   rxdart: ^0.21.0
 
+  validate: ^1.7.0
   masked_text: ^0.0.6
 
   # The following adds the Cupertino Icons font to your application.

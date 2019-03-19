@@ -1,18 +1,94 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-import '../models/main.dart';
-final MainModel _model = MainModel();
+// import '../models/main.dart';
+// final MainModel _model = MainModel();
 
 // https://www.youtube.com/watch?v=3YH7lyyrCCM
-class PhoneAuthDialog extends StatefulWidget {
+
+class PhoneSignInDialog extends StatefulWidget {
   @override
-  PhoneAuthDialogState createState() => new PhoneAuthDialogState();
+  PhoneSignInDialogState createState() => PhoneSignInDialogState();
 }
 
-class PhoneAuthDialogState extends State<PhoneAuthDialog> {
+class PhoneSignInDialogState extends State<PhoneSignInDialog> {
   String phoneNumber;
   String smsCode;
   String verificationId;
+
+  Future<void> verifyPhone() async {
+    final PhoneCodeAutoRetrievalTimeout autoRetrieve = (String verId) {
+      this.verificationId = verId;
+    };
+
+    final PhoneCodeSent smsCodeSent = (String verId, [int forceCodeResend]) {
+      this.verificationId = verId;
+      smsCodeDialog(context).then((value) {
+        print('Signed in');
+      });
+    };
+
+    final PhoneVerificationCompleted verifiedSuccess = (FirebaseUser user) {
+      print('verified');
+    };
+
+    final PhoneVerificationFailed veriFailed = (AuthException exception) {
+      print('${exception.message}');
+    };
+
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: this.phoneNumber,
+      codeAutoRetrievalTimeout: autoRetrieve,
+      codeSent: smsCodeSent,
+      timeout: const Duration(seconds: 5),
+      verificationCompleted: verifiedSuccess,
+      verificationFailed: veriFailed
+    );
+  }
+
+  Future<bool> smsCodeDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Enter sms Code'),
+          content: TextField(
+            onChanged: (value) {
+              this.smsCode = value;
+            },
+          ),
+          contentPadding: EdgeInsets.all(10.0),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Done'),
+              onPressed: () {
+                FirebaseAuth.instance.currentUser().then((user) {
+                  if (user != null) {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pushReplacementNamed('/homepage');
+                  } else {
+                    Navigator.of(context).pop();
+                    signIn();
+                  }
+                });
+              },
+            ),
+          ],
+        );
+      });
+  }
+
+  signIn() {
+    // FirebaseAuth.instance
+    //     .signInWithPhoneNumber(verificationId: verificationId, smsCode: smsCode)
+    //     .then((user) {
+    //   Navigator.of(context).pushReplacementNamed('/homepage');
+    // }).catchError((e) {
+    //   print(e);
+    // });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -24,34 +100,31 @@ class PhoneAuthDialogState extends State<PhoneAuthDialog> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               TextField(
-                decoration: InputDecoration(hintText: 'Enter a phonenumber'),
+                decoration: InputDecoration(hintText: 'Enter your phonenumber'),
                 onChanged: (value) {
                   this.phoneNumber = value;
                 },
               ),
-              RaisedButton(
-                onPressed: () {
-                  _model.verifyPhoneNumber(phoneNumber);
-                },
-                child: Text('Verify number'),
-                textColor: Colors.white,
-                elevation: 7.0,
-                color: Colors.green,
+              Padding(padding: EdgeInsets.all(10)),
+              ButtonTheme(
+                minWidth: MediaQuery.of(context).size.width,
+                child: RaisedButton(
+                  onPressed: verifyPhone,
+                  child: Text('Continue'),
+                  textColor: Colors.white,
+                  color: Colors.green,
+                ),
               ),
-              TextField(
-                decoration: InputDecoration(hintText: 'Enter the SMS Code'),
-                onChanged: (value) {
-                  this.phoneNumber = value;
-                },
-              ),
-              RaisedButton(
-                onPressed: () {
-                  _model.phoneNumberSignIn();
-                },
-                child: Text('Sign in'),
-                textColor: Colors.white,
-                elevation: 7.0,
-                color: Colors.green,
+              ButtonTheme(
+                minWidth: MediaQuery.of(context).size.width,
+                child: OutlineButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Cancel'),
+                  textColor: Colors.green,
+                  color: Colors.green,
+                ),
               ),
             ],
           ),
