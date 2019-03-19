@@ -35,10 +35,10 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _model.checkIfAuthenticated().then((bool isAuthenticated) {
-      print('isAuthenticated _MyAppState: $isAuthenticated');
+      print('checkIfAuthenticated: $isAuthenticated');
       _isAuthenticated = isAuthenticated;
     }).catchError((onError) {
-      print('MyApp error: ${onError.toString()}');
+      print('checkIfAuthenticated error: ${onError.toString()}');
     });
   }
 
@@ -47,7 +47,6 @@ class _MyAppState extends State<MyApp> {
     return ScopedModel<MainModel>(
       model: _model,
       child: MaterialApp(
-        // initialRoute: '/',
         routes: <String, WidgetBuilder>{
           '/login': (BuildContext context) => LoginScreen(),
           '/home': (BuildContext context) => HomeScreen(),

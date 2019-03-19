@@ -14,30 +14,9 @@ class PhoneAuthDialogState extends State<PhoneAuthDialog> {
   String smsCode;
   String verificationId;
 
-  Future<void> _verifyPhoneNumber() async {
-
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text('entry'),
-      //   actions: [
-      //     FlatButton(
-      //         onPressed: () {
-      //           Navigator
-      //               .of(context)
-      //               .pop();
-      //         },
-      //         child: Text('SAVE',
-      //             style: Theme
-      //                 .of(context)
-      //                 .textTheme
-      //                 .subhead
-      //                 .copyWith(color: Colors.white))),
-      //   ],
-      // ),
       body: Center(
         child: Container(
           margin: EdgeInsets.all(25),
@@ -52,9 +31,24 @@ class PhoneAuthDialogState extends State<PhoneAuthDialog> {
               ),
               RaisedButton(
                 onPressed: () {
-                  _model.phoneSignIn(phoneNumber);
+                  _model.verifyPhoneNumber(phoneNumber);
                 },
                 child: Text('Verify number'),
+                textColor: Colors.white,
+                elevation: 7.0,
+                color: Colors.green,
+              ),
+              TextField(
+                decoration: InputDecoration(hintText: 'Enter the SMS Code'),
+                onChanged: (value) {
+                  this.phoneNumber = value;
+                },
+              ),
+              RaisedButton(
+                onPressed: () {
+                  _model.phoneNumberSignIn();
+                },
+                child: Text('Sign in'),
                 textColor: Colors.white,
                 elevation: 7.0,
                 color: Colors.green,

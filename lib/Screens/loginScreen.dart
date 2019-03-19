@@ -13,7 +13,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  void _openPhoneAuthDialog() {
+  
+  phoneAuth() {
     Navigator.of(context).push(
       MaterialPageRoute<Null>(
           builder: (BuildContext context) {
@@ -21,6 +22,30 @@ class _LoginScreenState extends State<LoginScreen> {
           },
           fullscreenDialog: true),
     );
+  }
+
+  googleSignIn() {
+    _model.googleSignIn().then((user) => {
+      // if (user != null) {
+        Navigator.of(context).pushReplacementNamed('/home')
+      // }
+    });
+  }
+
+  facebookSignIn() {
+    _model.facebookSignIn().then((user) => {
+      // if (user != null) {
+        Navigator.of(context).pushReplacementNamed('/home')
+      // }
+    });
+  }
+
+  twitterSignIn() {
+    _model.twitterSignIn().then((user) => {
+      // if (user != null) {
+        Navigator.of(context).pushReplacementNamed('/home')
+      // }
+    });
   }
 
   @override
@@ -42,20 +67,20 @@ class _LoginScreenState extends State<LoginScreen> {
                 SignInButtonBuilder(
                   text: 'Sign in with Phone',
                   icon: Icons.phone,
-                  onPressed: () => _openPhoneAuthDialog(),
+                  onPressed: () => phoneAuth(),
                   backgroundColor: Colors.green,
                 ),
                 SignInButton(
                   Buttons.Google,
-                  onPressed: () => _model.googleSignIn(),
+                  onPressed: () => googleSignIn(),
                 ),
                 SignInButton(
                   Buttons.Facebook,
-                  onPressed: () => _model.facebookSignIn(),
+                  onPressed: () => facebookSignIn(),
                 ),
                 SignInButton(
                   Buttons.Twitter,
-                  onPressed: () => _model.twitterSignIn(),
+                  onPressed: () => twitterSignIn(),
                 ),
               ],
             ),

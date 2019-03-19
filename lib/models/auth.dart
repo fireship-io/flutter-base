@@ -39,6 +39,7 @@ class AuthService extends Model {
   }
 
   Future<bool> checkIfAuthenticated() async {
+    print('checkIfAuthenticated fired');
     FirebaseUser user = await _auth.currentUser();
     if (user != null) {
       updateUserData(user);
@@ -54,7 +55,7 @@ class AuthService extends Model {
     print('Email sign in');
   }
 
-  Future<FirebaseUser> phoneSignIn(phoneNumber) async {
+  Future<FirebaseUser> verifyPhoneNumber(phoneNumber) async {
     final PhoneCodeAutoRetrievalTimeout autoRetrieve = (String verId) {
       return verId;
     };
@@ -84,12 +85,16 @@ class AuthService extends Model {
     print('Phone sign in');
   }
 
+  Future<FirebaseUser> phoneNumberSignIn() async {
+
+  }
+
+
   Future<FirebaseUser> googleSignIn() async {
     try {
       loading.add(true);
       GoogleSignInAccount googleSignInAccount = await _googleSignIn.signIn();
-      GoogleSignInAuthentication googleAuth =
-          await googleSignInAccount.authentication;
+      GoogleSignInAuthentication googleAuth = await googleSignInAccount.authentication;
 
       final AuthCredential credential = GoogleAuthProvider.getCredential(
         accessToken: googleAuth.accessToken,
@@ -125,7 +130,7 @@ class AuthService extends Model {
 
           break;
         case FacebookLoginStatus.cancelledByUser:
-          print('object');
+          print('User cancelled Facebook login');
           break;
         case FacebookLoginStatus.error:
           print(loginResult.errorMessage);
@@ -134,7 +139,8 @@ class AuthService extends Model {
 
       loading.add(false);
     } catch (error) {
-      return error;
+      print(error.toString());
+      // return error;
     }
   }
 
@@ -186,13 +192,20 @@ class AuthService extends Model {
     }, merge: true);
   }
 
-  Future<String> signOut() async {
-    try {
-      await _auth.signOut();
-      return 'SignOut';
-    } catch (e) {
-      return e.toString();
-    }
+  // Future<String> signOut() async {
+  //   try {
+  //     await _auth.signOut();
+  //     notifyListeners();
+  //     return 'SignOut';
+  //   } catch (e) {
+  //     return e.toString();
+  //   }
+  // }
+
+  Future<void> signOut() async {
+    _auth.signOut();
+    notifyListeners();
+    return;
   }
 
 }
