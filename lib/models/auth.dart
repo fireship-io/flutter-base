@@ -54,7 +54,6 @@ class AuthService extends Model {
   Future<FirebaseUser> emailSignIn(String email, String password) async {
     try {
       FirebaseUser user = await _auth.signInWithEmailAndPassword(email: email, password: password);
-      notifyListeners();
       return user;
     } catch (e) {
       /// Posible errors:
@@ -64,13 +63,7 @@ class AuthService extends Model {
       // ERROR_USER_DISABLED          - If the user has been disabled (for example, in the Firebase console)
       // ERROR_TOO_MANY_REQUESTS      - If there was too many attempts to sign in as this user.
       // ERROR_OPERATION_NOT_ALLOWED  - Indicates that Email & Password accounts are not enabled.
-
-      if (e.code == 'ERROR_WRONG_PASSWORD' ||
-          e.code == 'ERROR_USER_NOT_FOUND') {
-        throw 'Wrong username or password.';
-      } else {
-        throw 'Unknown error.';
-      }
+      throw 'Unknown user or wrong password.';
     }
   }
 
@@ -86,6 +79,7 @@ class AuthService extends Model {
     final PhoneVerificationCompleted verifiedSuccess = (FirebaseUser user) {
       updateUserData(user);
       print('User verified');
+      return user;
     };
 
     final PhoneVerificationFailed verifiedFailed = (AuthException exeption) {
@@ -107,7 +101,6 @@ class AuthService extends Model {
   Future<FirebaseUser> phoneNumberSignIn() async {
 
   }
-
 
   Future<FirebaseUser> googleSignIn() async {
     try {
@@ -158,8 +151,7 @@ class AuthService extends Model {
 
       loading.add(false);
     } catch (error) {
-      print(error.toString());
-      // return error;
+      return error;
     }
   }
 
@@ -210,16 +202,6 @@ class AuthService extends Model {
       'lastSeen': DateTime.now()
     }, merge: true);
   }
-
-  // Future<String> signOut() async {
-  //   try {
-  //     await _auth.signOut();
-  //     notifyListeners();
-  //     return 'SignOut';
-  //   } catch (e) {
-  //     return e.toString();
-  //   }
-  // }
 
   Future<void> signOut() async {
     _auth.signOut();
