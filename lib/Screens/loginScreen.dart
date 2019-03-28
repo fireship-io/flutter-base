@@ -47,6 +47,13 @@ class _LoginScreenState extends State<LoginScreen> {
       if (user != null) {
         Navigator.of(context).pushReplacementNamed('/home');
       }
+    }).catchError((error) {
+      print('FB error: $error');
+      final snackBar = SnackBar(
+        content: Text(error),
+      );
+
+      Scaffold.of(context).showSnackBar(snackBar);
     });
   }
 

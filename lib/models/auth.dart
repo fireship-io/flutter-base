@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:flutter_twitter_login/flutter_twitter_login.dart';
 import 'package:rxdart/rxdart.dart';
+import 'dart:async';
 
 class AuthService extends Model {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
@@ -39,14 +40,11 @@ class AuthService extends Model {
   }
 
   Future<bool> checkIfAuthenticated() async {
-    print('checkIfAuthenticated fired');
     FirebaseUser user = await _auth.currentUser();
     if (user != null) {
       updateUserData(user);
-      print('User loggin in');
       return true;
     } else {
-      print('User not logged in');
       return false;
     }
   }
@@ -104,7 +102,6 @@ class AuthService extends Model {
 
   Future<FirebaseUser> googleSignIn() async {
     try {
-      loading.add(true);
       GoogleSignInAccount googleSignInAccount = await _googleSignIn.signIn();
       GoogleSignInAuthentication googleAuth = await googleSignInAccount.authentication;
 
@@ -115,9 +112,7 @@ class AuthService extends Model {
 
       FirebaseUser user = await _auth.signInWithCredential(credential);
       updateUserData(user);
-      print("user name: ${user.displayName}");
 
-      loading.add(false);
       return user;
     } catch (error) {
       return error;
@@ -126,7 +121,6 @@ class AuthService extends Model {
 
   Future<FirebaseUser> facebookSignIn() async {
     try {
-      loading.add(true);
       final loginResult = await _facebookSignIn.logInWithReadPermissions(['email', 'public_profile']);
 
       switch (loginResult.status) {
@@ -137,34 +131,27 @@ class AuthService extends Model {
 
           final FirebaseUser user = await _auth.signInWithCredential(credential);
           updateUserData(user);
-          print("user name: ${user.displayName}");
           return user;
-
           break;
         case FacebookLoginStatus.cancelledByUser:
-          print('User cancelled Facebook login');
+          throw 'User cancelled Facebook login.';
           break;
         case FacebookLoginStatus.error:
-          print(loginResult.errorMessage);
+          throw(loginResult.errorMessage);
           break;
       }
 
-      loading.add(false);
     } catch (error) {
-      return error;
+      throw(error.message);
     }
   }
 
   Future<FirebaseUser> twitterSignIn() async {
-    try {
-      loading.add(true);
-      
+    try {      
       final TwitterLoginResult loginResult = await twitterLogin.authorize();
 
       switch (loginResult.status) {
         case TwitterLoginStatus.loggedIn:
-          final session = loginResult.session;
-          print('${session.token}, ${session.secret}');
 
           final AuthCredential credential = TwitterAuthProvider.getCredential(
             authToken: loginResult.session.token,
@@ -173,19 +160,17 @@ class AuthService extends Model {
 
           final FirebaseUser user = await _auth.signInWithCredential(credential);
           updateUserData(user);
-          print("user name: ${user.displayName}");
           return user;
 
           break;
         case TwitterLoginStatus.cancelledByUser:
-          print('Cancelled by user');
+          throw('Cancelled by user');
           break;
         case TwitterLoginStatus.error:
-          print('${loginResult.errorMessage}');
+          throw('${loginResult.errorMessage}');
           break;
       }
 
-      loading.add(false);
     } catch (error) {
       return error;
     }
@@ -203,6 +188,12 @@ class AuthService extends Model {
     }, merge: true);
   }
 
+  Future<Map> getUserData() async {
+    FirebaseUser user = await _auth.currentUser();
+    var doc = await Firestore.instance.collection('users').document(user.uid).get();
+    return doc.data;
+  }
+
   Future<void> signOut() async {
     _auth.signOut();
     notifyListeners();
@@ -210,7 +201,4 @@ class AuthService extends Model {
   }
 
 }
-
-// TODO refactor global to InheritedWidget
-// final AuthService authService = AuthService();
 

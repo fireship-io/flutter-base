@@ -18,7 +18,7 @@ dependencies:
 
   firebase_core: ^0.3.1+1
   firebase_analytics: ^2.0.3
-  cloud_firestore: ^0.9.5+2
+  cloud_firestore: ^0.9.7
 
   flutter_signin_button: ^0.2.7
   firebase_auth: ^0.8.1+4

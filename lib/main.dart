@@ -35,7 +35,6 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _model.checkIfAuthenticated().then((bool isAuthenticated) {
-      print('checkIfAuthenticated: $isAuthenticated');
       _isAuthenticated = isAuthenticated;
     }).catchError((onError) {
       print('checkIfAuthenticated error: ${onError.toString()}');
