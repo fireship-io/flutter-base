@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:scoped_model/scoped_model.dart';
 
-import 'models/main.dart';
+import './models/auth.dart';
 
 import './Screens/homeScreen.dart';
 import './Screens/loginScreen.dart';
-// import './Screens/common.dart';
 
 bool _isAuthenticated = false;
-final MainModel _model = MainModel();
+// final MainModel _model = MainModel();
+final auth = new AuthService();
 
 void main() async {
-  _isAuthenticated = await _model.checkIfAuthenticated();
+  _isAuthenticated = await auth.checkIfAuthenticated();
   runApp(MyApp());
 }
 
@@ -34,7 +33,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _model.checkIfAuthenticated().then((bool isAuthenticated) {
+    auth.checkIfAuthenticated().then((bool isAuthenticated) {
       _isAuthenticated = isAuthenticated;
     }).catchError((onError) {
       print('checkIfAuthenticated error: ${onError.toString()}');
@@ -43,9 +42,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return ScopedModel<MainModel>(
-      model: _model,
-      child: MaterialApp(
+    return MaterialApp(
         routes: <String, WidgetBuilder>{
           '/login': (BuildContext context) => LoginScreen(),
           '/home': (BuildContext context) => HomeScreen(),
@@ -68,7 +65,6 @@ class _MyAppState extends State<MyApp> {
           return MaterialPageRoute(
               builder: (BuildContext context) => HomeScreen());
         },
-      ),
     );
   }
 }

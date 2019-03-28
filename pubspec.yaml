@@ -26,13 +26,13 @@ dependencies:
   flutter_facebook_login: ^2.0.0
   flutter_twitter_login: ^1.1.0
 
-  scoped_model: ^1.0.1
-
   rxdart: ^0.21.0
 
   validate: ^1.7.0
   masked_text: ^0.0.6
 
+  clippy_flutter: ^1.0.0
+  
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2

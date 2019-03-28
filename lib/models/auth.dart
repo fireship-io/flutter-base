@@ -1,4 +1,3 @@
-import 'package:scoped_model/scoped_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -7,7 +6,7 @@ import 'package:flutter_twitter_login/flutter_twitter_login.dart';
 import 'package:rxdart/rxdart.dart';
 import 'dart:async';
 
-class AuthService extends Model {
+class AuthService {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FacebookLogin _facebookSignIn = FacebookLogin();
   final twitterLogin = TwitterLogin(
@@ -196,7 +195,6 @@ class AuthService extends Model {
 
   Future<void> signOut() async {
     _auth.signOut();
-    notifyListeners();
     return;
   }
 
