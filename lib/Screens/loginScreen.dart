@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 
-import '../models/main.dart';
-
 import '../Screens/PhoneAuthDialog.dart';
 import '../Screens/EmailSignInDialog.dart';
 
-final MainModel _model = MainModel();
+import '../models/auth.dart';
+
+final auth = new AuthService();
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -35,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   googleSignIn() {
-    _model.googleSignIn().then((user) {
+    auth.googleSignIn().then((user) {
       if (user != null) {
         Navigator.of(context).pushReplacementNamed('/home');
       }
@@ -43,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   facebookSignIn() {
-    _model.facebookSignIn().then((user) {
+    auth.facebookSignIn().then((user) {
       if (user != null) {
         Navigator.of(context).pushReplacementNamed('/home');
       }
@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   twitterSignIn() {
-    _model.twitterSignIn().then((user) {
+    auth.twitterSignIn().then((user) {
       if (user != null) {
         Navigator.of(context).pushReplacementNamed('/home');
       }
@@ -68,7 +68,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: Color.fromRGBO(42, 46, 53, 1.0),
       body: SingleChildScrollView(
         child: Center(
           child: Column(

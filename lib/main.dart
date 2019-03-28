@@ -5,9 +5,8 @@ import './models/auth.dart';
 import './Screens/homeScreen.dart';
 import './Screens/loginScreen.dart';
 
-bool _isAuthenticated = false;
-// final MainModel _model = MainModel();
 final auth = new AuthService();
+bool _isAuthenticated = false;
 
 void main() async {
   _isAuthenticated = await auth.checkIfAuthenticated();
@@ -20,15 +19,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // Map<String, dynamic> _profile;
-  // bool _loading = false;
-
-  // @override
-  // initState() {
-  //   super.initState();
-  //   authService.profile.listen((state) => setState(() => _profile = state));
-  //   authService.loading.listen((state) => setState(() => _loading = state));
-  // }
 
   @override
   void initState() {
@@ -61,7 +51,6 @@ class _MyAppState extends State<MyApp> {
           }
         },
         onUnknownRoute: (RouteSettings settings) {
-          print('onUnknownRoute');
           return MaterialPageRoute(
               builder: (BuildContext context) => HomeScreen());
         },

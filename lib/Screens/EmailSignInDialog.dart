@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:validate/validate.dart';
 
-import '../models/main.dart';
+import '../models/auth.dart';
 
-final MainModel _model = MainModel();
+final auth = new AuthService();
+
 
 class EmailSignInDialog extends StatefulWidget {
   @override
@@ -30,7 +31,7 @@ class EmailSignInDialogState extends State<EmailSignInDialog> {
       _formKey.currentState.save();
 
       try {
-        await _model.emailSignIn(email, password);
+        await auth.emailSignIn(email, password);
         Navigator.of(context).pushReplacementNamed('/home');
       } catch (e) {
         print('Error: $e');

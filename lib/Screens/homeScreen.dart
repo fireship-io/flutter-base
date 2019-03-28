@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../models/main.dart';
 import '../models/auth.dart';
 
-final MainModel _model = MainModel();
+final auth = new AuthService();
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -12,7 +10,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  var auth = new AuthService();
 
   Widget _userPhoto(photoUrl) {
     if (photoUrl != null) {
@@ -44,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
               RaisedButton(
                 child: Text('Logout'),
                 onPressed: () {
-                  _model.signOut();
+                  auth.signOut();
                   Navigator.of(context).pushReplacementNamed('/login');
                 },
               ),
