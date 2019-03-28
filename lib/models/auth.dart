@@ -51,6 +51,7 @@ class AuthService {
   Future<FirebaseUser> emailSignIn(String email, String password) async {
     try {
       FirebaseUser user = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      updateUserData(user);
       return user;
     } catch (e) {
       /// Posible errors:
@@ -114,7 +115,7 @@ class AuthService {
 
       return user;
     } catch (error) {
-      return error;
+      return error.message;
     }
   }
 
@@ -171,7 +172,7 @@ class AuthService {
       }
 
     } catch (error) {
-      return error;
+      throw(error.message);
     }
   }
 

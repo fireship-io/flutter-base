@@ -10,15 +10,18 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
   Widget _userPhoto(photoUrl) {
+    print(photoUrl);
     if (photoUrl != null) {
       return Container(
         margin: EdgeInsets.all(10),
         child: Image.network(photoUrl),
       );
-    } else {
-      return Container();
+    } else if (photoUrl == null) {
+      return CircleAvatar(
+        backgroundColor: Colors.blueAccent,
+        child: Text('AH'),
+      );
     }
   }
 

@@ -14,6 +14,16 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  BuildContext scaffoldContext;
+
+  _showInSnackBar(String value) {
+    Scaffold.of(scaffoldContext).showSnackBar(
+      SnackBar(
+        content: Text(value),
+      ),
+    );
+  }
+
   emailSignIn() {
     Navigator.of(context).push(
       MaterialPageRoute<Null>(
@@ -34,79 +44,82 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  googleSignIn() {
-    auth.googleSignIn().then((user) {
-      if (user != null) {
-        Navigator.of(context).pushReplacementNamed('/home');
-      }
-    });
+  googleSignIn() async {
+    try {
+      await auth.googleSignIn();
+      Navigator.of(context).pushReplacementNamed('/home');
+    } catch (e) {
+      print('Error: $e');
+      this._showInSnackBar(e);
+    }
   }
 
-  facebookSignIn() {
-    auth.facebookSignIn().then((user) {
-      if (user != null) {
-        Navigator.of(context).pushReplacementNamed('/home');
-      }
-    }).catchError((error) {
-      print('FB error: $error');
-      final snackBar = SnackBar(
-        content: Text(error),
-      );
-
-      Scaffold.of(context).showSnackBar(snackBar);
-    });
+  facebookSignIn() async {
+    try {
+      await auth.facebookSignIn();
+      Navigator.of(context).pushReplacementNamed('/home');
+    } catch (e) {
+      print('Error: $e');
+      this._showInSnackBar(e);
+    }
   }
 
-  twitterSignIn() {
-    auth.twitterSignIn().then((user) {
-      if (user != null) {
-        Navigator.of(context).pushReplacementNamed('/home');
-      }
-    });
+  twitterSignIn() async {
+    try {
+      await auth.twitterSignIn();
+      Navigator.of(context).pushReplacementNamed('/home');
+    } catch (e) {
+      print('Error: $e');
+      this._showInSnackBar(e);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Container(
-                margin: EdgeInsets.all(30),
-                width: MediaQuery.of(context).size.width / 3,
-                height: 200,
-                child: Image.asset('assets/images/Fireship.jpeg'),
-              ),
-              SignInButtonBuilder(
-                text: 'Sign in with Email',
-                icon: Icons.email,
-                onPressed: () => emailSignIn(),
-                backgroundColor: Colors.blueGrey[700],
-              ),
-              SignInButtonBuilder(
-                text: 'Sign in with Phone',
-                icon: Icons.phone,
-                onPressed: () => phoneSignIn(),
-                backgroundColor: Colors.green,
-              ),
-              SignInButton(
-                Buttons.Google,
-                onPressed: () => googleSignIn(),
-              ),
-              SignInButton(
-                Buttons.Facebook,
-                onPressed: () => facebookSignIn(),
-              ),
-              SignInButton(
-                Buttons.Twitter,
-                onPressed: () => twitterSignIn(),
-              ),
-            ],
+      backgroundColor: Colors.white,
+      body: Builder(builder: (BuildContext context) {
+        scaffoldContext = context;
+        return SingleChildScrollView(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.all(30),
+                  width: MediaQuery.of(context).size.width / 3,
+                  height: 200,
+                  child: Image.asset('assets/images/Fireship.jpeg'),
+                ),
+                SignInButtonBuilder(
+                  text: 'Sign in with Email',
+                  icon: Icons.email,
+                  onPressed: () => emailSignIn(),
+                  backgroundColor: Colors.blueGrey[700],
+                ),
+                SignInButtonBuilder(
+                  text: 'Sign in with Phone',
+                  icon: Icons.phone,
+                  onPressed: () => phoneSignIn(),
+                  backgroundColor: Colors.green,
+                ),
+                SignInButton(
+                  Buttons.Google,
+                  onPressed: () => googleSignIn(),
+                ),
+                SignInButton(
+                  Buttons.Facebook,
+                  onPressed: () => facebookSignIn(),
+                ),
+                SignInButton(
+                  Buttons.Twitter,
+                  onPressed: () => twitterSignIn(),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 }
