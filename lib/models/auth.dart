@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
@@ -19,7 +20,9 @@ class AuthService {
 
   Observable<FirebaseUser> user; // firebase user
   Observable<Map<String, dynamic>> profile; // custom user data in Firestore
-  PublishSubject loading = PublishSubject();
+
+  String _verificationId;
+  String verificationId;
 
   // constructor
   AuthService() {
@@ -28,10 +31,10 @@ class AuthService {
     profile = user.switchMap((FirebaseUser u) {
       if (u != null) {
         return _db
-          .collection('users')
-          .document(u.uid)
-          .snapshots()
-          .map((snap) => snap.data);
+            .collection('users')
+            .document(u.uid)
+            .snapshots()
+            .map((snap) => snap.data);
       } else {
         return Observable.just({});
       }
@@ -50,54 +53,73 @@ class AuthService {
 
   Future<FirebaseUser> emailSignIn(String email, String password) async {
     try {
-      FirebaseUser user = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      FirebaseUser user = await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
       updateUserData(user);
       return user;
-    } catch (e) {
-      /// Posible errors:
-      // ERROR_INVALID_EMAIL          - If the [email] address is malformed.
-      // ERROR_WRONG_PASSWORD         - If the [password] is wrong.
-      // ERROR_USER_NOT_FOUND         - If there is no user corresponding to the given [email] address, or if the user has been deleted.
-      // ERROR_USER_DISABLED          - If the user has been disabled (for example, in the Firebase console)
-      // ERROR_TOO_MANY_REQUESTS      - If there was too many attempts to sign in as this user.
-      // ERROR_OPERATION_NOT_ALLOWED  - Indicates that Email & Password accounts are not enabled.
+    } on PlatformException catch (e) {
+      throw e.message;
+    } catch (error) {
       throw 'Unknown user or wrong password.';
     }
   }
 
-  Future<FirebaseUser> verifyPhoneNumber(phoneNumber) async {
-    final PhoneCodeAutoRetrievalTimeout autoRetrieve = (String verId) {
-      return verId;
+  Future<String> verifyPhoneNumber(String phoneNumber) async {
+    final PhoneVerificationCompleted verificationCompleted = (FirebaseUser user) {
+      print('Auth: verificationCompleted');
+      return 'signInWithPhoneNumber auto succeeded: $user';
     };
 
-    final PhoneCodeSent smsCodeSent = (String verId, [int forceCodeSend]) {
-      return verId;
+    final PhoneVerificationFailed verificationFailed = (AuthException authException) {
+      print('Auth: verificationFailed');
+      return 'Phone number verification failed. Code: ${authException.code}. Message: ${authException.message}';
     };
 
-    final PhoneVerificationCompleted verifiedSuccess = (FirebaseUser user) {
-      updateUserData(user);
-      print('User verified');
-      return user;
+    final PhoneCodeSent codeSent = (String verificationId, [int forceResendingToken]) async {
+      print('Auth: codeSent: $verificationId');
+      this._verificationId = verificationId;
+      return 'Please check your phone for the verification code.';
     };
 
-    final PhoneVerificationFailed verifiedFailed = (AuthException exeption) {
-      print('Phone exeption error: ${exeption.message}');
+    final PhoneCodeAutoRetrievalTimeout codeAutoRetrievalTimeout = (String verificationId) {
+      print('Auth: codeAutoRetrievalTimeout');
+      this._verificationId = verificationId;
     };
 
-    await FirebaseAuth.instance.verifyPhoneNumber(
+    await _auth.verifyPhoneNumber(
       phoneNumber: phoneNumber,
-      codeAutoRetrievalTimeout: autoRetrieve,
-      codeSent: smsCodeSent,
       timeout: Duration(seconds: 5),
-      verificationCompleted: verifiedSuccess,
-      verificationFailed: verifiedFailed,
-    );
-
-    print('Phone sign in');
+      verificationCompleted: verificationCompleted,
+      verificationFailed: verificationFailed,
+      codeSent: codeSent,
+      codeAutoRetrievalTimeout: codeAutoRetrievalTimeout);
+    
+    return('Auth: after verifyPhoneNumber');
   }
 
-  Future<FirebaseUser> phoneNumberSignIn() async {
+  Future<String> signInWithPhoneNumber(String smsCode) async {
+    final AuthCredential credential = PhoneAuthProvider.getCredential(
+      verificationId: this._verificationId,
+      smsCode: smsCode,
+    );
 
+    try {
+      FirebaseUser user = await _auth.signInWithCredential(credential);
+      final FirebaseUser currentUser = await _auth.currentUser();
+      assert(user.uid == currentUser.uid);
+
+      if (user != null) {
+        print('~~~~~~~ User: $user');
+        updateUserData(user);
+        return 'Successfully signed in, uid: ' + user.uid;
+      } else {
+        return 'Sign in failed';
+      }
+    } on PlatformException catch (e) {
+      throw e.message;
+    } catch (error) {
+      throw 'Unknown user or wrong password.';
+    }
   }
 
   Future<FirebaseUser> googleSignIn() async {
@@ -114,22 +136,25 @@ class AuthService {
       updateUserData(user);
 
       return user;
+    } on PlatformException catch (e) {
+      throw e.message;
     } catch (error) {
-      return error.message;
+      throw error;
     }
   }
 
   Future<FirebaseUser> facebookSignIn() async {
     try {
-      final loginResult = await _facebookSignIn.logInWithReadPermissions(['email', 'public_profile']);
+      final loginResult = await _facebookSignIn
+          .logInWithReadPermissions(['email', 'public_profile']);
 
       switch (loginResult.status) {
         case FacebookLoginStatus.loggedIn:
           final AuthCredential credential = FacebookAuthProvider.getCredential(
-            accessToken: loginResult.accessToken.token
-          );
+              accessToken: loginResult.accessToken.token);
 
-          final FirebaseUser user = await _auth.signInWithCredential(credential);
+          final FirebaseUser user =
+              await _auth.signInWithCredential(credential);
           updateUserData(user);
           return user;
           break;
@@ -137,42 +162,43 @@ class AuthService {
           throw 'User cancelled Facebook login.';
           break;
         case FacebookLoginStatus.error:
-          throw(loginResult.errorMessage);
+          throw (loginResult.errorMessage);
           break;
       }
-
+    } on PlatformException catch (e) {
+      throw e.message;
     } catch (error) {
-      throw(error.message);
+      throw error;
     }
   }
 
   Future<FirebaseUser> twitterSignIn() async {
-    try {      
+    try {
       final TwitterLoginResult loginResult = await twitterLogin.authorize();
 
       switch (loginResult.status) {
         case TwitterLoginStatus.loggedIn:
-
           final AuthCredential credential = TwitterAuthProvider.getCredential(
-            authToken: loginResult.session.token,
-            authTokenSecret: loginResult.session.secret
-          );
+              authToken: loginResult.session.token,
+              authTokenSecret: loginResult.session.secret);
 
-          final FirebaseUser user = await _auth.signInWithCredential(credential);
+          final FirebaseUser user =
+              await _auth.signInWithCredential(credential);
           updateUserData(user);
           return user;
 
           break;
         case TwitterLoginStatus.cancelledByUser:
-          throw('Cancelled by user');
+          throw ('Cancelled by user');
           break;
         case TwitterLoginStatus.error:
-          throw('${loginResult.errorMessage}');
+          throw ('${loginResult.errorMessage}');
           break;
       }
-
+    } on PlatformException catch (e) {
+      throw e.message;
     } catch (error) {
-      throw(error.message);
+      throw 'Something went wrong.';
     }
   }
 
@@ -182,6 +208,7 @@ class AuthService {
     return ref.setData({
       'uid': user.uid,
       'email': user.email,
+      'phoneNumber': user.phoneNumber,
       'photoURL': user.photoUrl,
       'displayName': user.displayName,
       'lastSeen': DateTime.now()
@@ -190,7 +217,8 @@ class AuthService {
 
   Future<Map> getUserData() async {
     FirebaseUser user = await _auth.currentUser();
-    var doc = await Firestore.instance.collection('users').document(user.uid).get();
+    var doc =
+        await Firestore.instance.collection('users').document(user.uid).get();
     return doc.data;
   }
 
@@ -198,6 +226,4 @@ class AuthService {
     _auth.signOut();
     return;
   }
-
 }
-

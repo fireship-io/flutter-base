@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../models/auth.dart';
 
-// import '../models/main.dart';
-// final MainModel _model = MainModel();
-
-// https://www.youtube.com/watch?v=3YH7lyyrCCM
+final auth = new AuthService();
 
 class PhoneSignInDialog extends StatefulWidget {
   @override
@@ -12,124 +9,110 @@ class PhoneSignInDialog extends StatefulWidget {
 }
 
 class PhoneSignInDialogState extends State<PhoneSignInDialog> {
-  String phoneNumber;
-  String smsCode;
-  String verificationId;
+  BuildContext scaffoldContext;
+  final TextEditingController _phoneNumberController = TextEditingController();
+  final TextEditingController _smsController = TextEditingController();
 
-  Future<void> verifyPhone() async {
-    final PhoneCodeAutoRetrievalTimeout autoRetrieve = (String verId) {
-      this.verificationId = verId;
-    };
-
-    final PhoneCodeSent smsCodeSent = (String verId, [int forceCodeResend]) {
-      this.verificationId = verId;
-      smsCodeDialog(context).then((value) {
-        print('Signed in');
-      });
-    };
-
-    final PhoneVerificationCompleted verifiedSuccess = (FirebaseUser user) {
-      print('verified');
-    };
-
-    final PhoneVerificationFailed veriFailed = (AuthException exception) {
-      print('${exception.message}');
-    };
-
-    await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: this.phoneNumber,
-      codeAutoRetrievalTimeout: autoRetrieve,
-      codeSent: smsCodeSent,
-      timeout: const Duration(seconds: 5),
-      verificationCompleted: verifiedSuccess,
-      verificationFailed: veriFailed
+  _showInSnackBar(String value) {
+    Scaffold.of(scaffoldContext).showSnackBar(
+      SnackBar(
+        content: Text(value),
+      ),
     );
   }
 
-  Future<bool> smsCodeDialog(BuildContext context) {
-    return showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Enter sms Code'),
-          content: TextField(
-            onChanged: (value) {
-              this.smsCode = value;
-            },
-          ),
-          contentPadding: EdgeInsets.all(10.0),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Done'),
-              onPressed: () {
-                FirebaseAuth.instance.currentUser().then((user) {
-                  if (user != null) {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pushReplacementNamed('/homepage');
-                  } else {
-                    Navigator.of(context).pop();
-                    signIn();
-                  }
-                });
-              },
-            ),
-          ],
-        );
-      });
+  _verifyPhoneNumber() async {
+    try {
+      if (_phoneNumberController.text != '') {
+        print(_phoneNumberController.text);
+        var message = await auth.verifyPhoneNumber(_phoneNumberController.text);
+        _showInSnackBar(message);
+      }
+    } catch (e) {
+      this._showInSnackBar('Error: $e');
+    }
   }
 
-  signIn() {
-    // FirebaseAuth.instance
-    //     .signInWithPhoneNumber(verificationId: verificationId, smsCode: smsCode)
-    //     .then((user) {
-    //   Navigator.of(context).pushReplacementNamed('/homepage');
-    // }).catchError((e) {
-    //   print(e);
-    // });
+  _signInWithPhoneNumber() async {
+    try {
+      await auth.signInWithPhoneNumber(_smsController.text);
+      Navigator.of(context).pushReplacementNamed('/home');
+    } catch (e) {
+      this._showInSnackBar('Error: $e');
+    }
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Container(
-          margin: EdgeInsets.all(25),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              TextField(
-                decoration: InputDecoration(hintText: 'Enter your phonenumber'),
-                onChanged: (value) {
-                  this.phoneNumber = value;
-                },
+      body: Builder(builder: (BuildContext context) {
+        scaffoldContext = context;
+        return SingleChildScrollView(
+          child: Center(
+            child: Container(
+              margin: EdgeInsets.all(25),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: TextFormField(
+                      controller: _phoneNumberController,
+                      decoration: InputDecoration(labelText: 'Phone number (+x xxx-xxx-xxxx)'),
+                      validator: (String value) {
+                        if (value.isEmpty) {
+                          return 'Phone number (+x xxx-xxx-xxxx)';
+                        }
+                      },
+                    ),
+                  ),
+                  ButtonTheme(
+                    minWidth: MediaQuery.of(context).size.width,
+                    child: RaisedButton(
+                      child: Text('Verify phone number'),
+                      onPressed: () => _verifyPhoneNumber(),
+                      textColor: Colors.white,
+                      elevation: 7.0,
+                      color: Colors.green,
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: TextField(
+                      controller: _smsController,
+                      decoration:
+                          InputDecoration(labelText: 'Verification code'),
+                    ),
+                  ),
+                  ButtonTheme(
+                    minWidth: MediaQuery.of(context).size.width,
+                    child: RaisedButton(
+                      onPressed: () async {
+                        _signInWithPhoneNumber();
+                      },
+                      child: Text('Sign in with phone number'),
+                      textColor: Colors.white,
+                      elevation: 7.0,
+                      color: Colors.green,
+                    ),
+                  ),
+                  ButtonTheme(
+                    minWidth: MediaQuery.of(context).size.width,
+                    child: OutlineButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text('Cancel'),
+                      textColor: Colors.green,
+                      color: Colors.green,
+                    ),
+                  ),
+                ],
               ),
-              Padding(padding: EdgeInsets.all(10)),
-              ButtonTheme(
-                minWidth: MediaQuery.of(context).size.width,
-                child: RaisedButton(
-                  onPressed: verifyPhone,
-                  child: Text('Continue'),
-                  textColor: Colors.white,
-                  color: Colors.green,
-                ),
-              ),
-              ButtonTheme(
-                minWidth: MediaQuery.of(context).size.width,
-                child: OutlineButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('Cancel'),
-                  textColor: Colors.green,
-                  color: Colors.green,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 }

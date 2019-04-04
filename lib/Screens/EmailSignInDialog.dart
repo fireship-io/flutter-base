@@ -17,7 +17,7 @@ class EmailSignInDialogState extends State<EmailSignInDialog> {
   String email;
   String password;
 
-  showInSnackBar(String value) {
+  _showInSnackBar(String value) {
     Scaffold.of(scaffoldContext).showSnackBar(
       SnackBar(
         content: Text(value),
@@ -35,7 +35,7 @@ class EmailSignInDialogState extends State<EmailSignInDialog> {
         Navigator.of(context).pushReplacementNamed('/home');
       } catch (e) {
         print('Error: $e');
-        this.showInSnackBar(e);
+        this._showInSnackBar(e);
       }
     }
   }
@@ -44,7 +44,7 @@ class EmailSignInDialogState extends State<EmailSignInDialog> {
     try {
       Validate.isEmail(value);
     } catch (e) {
-      return 'The E-mail Address must be a valid email address.';
+      return 'The E-mail must be a valid address.';
     }
   }
 
@@ -68,7 +68,7 @@ class EmailSignInDialogState extends State<EmailSignInDialog> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   TextFormField(
-                    decoration: InputDecoration(hintText: 'Enter a e-mail'),
+                    decoration: InputDecoration(hintText: 'Enter an email'),
                     keyboardType: TextInputType.emailAddress,
                     autofocus: true,
                     validator: (String value) {
@@ -80,7 +80,7 @@ class EmailSignInDialogState extends State<EmailSignInDialog> {
                   ),
                   Padding(padding: EdgeInsets.all(10)),
                   TextFormField(
-                    decoration: InputDecoration(hintText: 'Password'),
+                    decoration: InputDecoration(hintText: 'Enter your password'),
                     obscureText: true,
                     validator: (String value) {
                       _validatePassword(value);

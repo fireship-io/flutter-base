@@ -10,17 +10,21 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Widget _userPhoto(photoUrl) {
-    print(photoUrl);
-    if (photoUrl != null) {
+
+  _userPhoto(photoUrl) {
+    if (photoUrl != 'null') {
       return Container(
         margin: EdgeInsets.all(10),
         child: Image.network(photoUrl),
       );
-    } else if (photoUrl == null) {
-      return CircleAvatar(
-        backgroundColor: Colors.blueAccent,
-        child: Text('AH'),
+    } else if (photoUrl == 'null') {
+      return Container(
+        margin: EdgeInsets.all(10),
+        child: CircleAvatar(
+          radius: 40,
+          backgroundColor: Colors.blueAccent,
+          child: Icon(Icons.help_outline, size: 40),
+        ),
       );
     }
   }
@@ -38,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
               _userPhoto(doc["photoURL"].toString()),
               Text(doc['displayName'].toString()),
               Text(doc['email'].toString()),
+              Text(doc['phoneNumber'].toString()),
               Text(doc['lastSeen'].toString()),
               Text(doc['uid']),
               SizedBox(height: 20),
@@ -57,11 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Size screenSize = MediaQuery.of(context).size;
-    final EdgeInsets viewInsets = MediaQuery.of(context).viewInsets;
-    print(screenSize);
-    print(viewInsets);
-
     return Scaffold(
       body: FutureBuilder<Map>(
         future: auth.getUserData(),
@@ -71,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return Center(child: Text('No userdata found...'));
             case ConnectionState.active:
             case ConnectionState.waiting:
-              return Text('Awaiting result...');
+              return Center(child: Text('Loading...'));
             case ConnectionState.done:
               var doc = snapshot.data;
               if (snapshot.hasError) return Text('Error: ${snapshot.error}');
